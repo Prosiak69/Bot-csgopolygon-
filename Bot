@@ -1,0 +1,122 @@
+import time
+import re
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import pymsteams
+ 
+wiadomosc = pymsteams.connectorcard("https://outlook.office.com/webhook/100b4924-888f-48fc-8e0f-a8a2802acd40@cca226a3-a7aa-4b2c-ba03-02f8f26b6728/IncomingWebhook/2ee15cb59f264ed59c6776f7772d9b88/7dcd2613-8d9f-4df4-bf38-ac89d2cb49e3")
+ 
+options = webdriver.ChromeOptions()
+driver = webdriver.Chrome('chromedriver.exe', options=options)
+driver2 = webdriver.Chrome('chromedriver.exe', options=options)
+ 
+class element_rolling_in(object):
+ 
+  def __init__(self, locator):
+    self.locator = locator
+ 
+  def __call__(self, driver):
+    rollingIn = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[2]/div[1]/div[1]/div/span')
+    element = driver.find_element(*self.locator)
+    if(rollingIn.get_attribute('textContent').startswith("Rolling in")):
+        return element
+    else:
+        return False
+ 
+class element_rolled(object):
+ 
+  def __init__(self, locator):
+    self.locator = locator
+ 
+  def __call__(self, driver):
+    rolled = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[2]/div[1]/div[1]/span')
+    element = driver.find_element(*self.locator)
+    if(rolled.get_attribute('textContent').startswith("Rolled")):
+        return element
+    else:
+        return False
+ 
+wait = WebDriverWait(driver, 120)
+wait2 = WebDriverWait(driver, 120)
+ 
+STEAM_LOGIN = "kapsiocha"
+STEAM_PASSWORD = "K@psiocha77"
+WARTOSC_POCZATKOWA = 2
+ 
+def RULETKA():
+    monety = driver.find_element_by_xpath('/html/body/header/div[2]/div[2]/div[1]/span/i[1]')
+ 
+    pole = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[2]/div[1]/div[4]/div[2]/input')
+    bet = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[2]/div[2]/div[1]/div[1]/button')
+    rolling = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[2]/div[1]/div[1]/div/span')
+    WARTOSC_AKTUALNA = WARTOSC_POCZATKOWA
+    WARTOSC_STARTOWA = int(monety.get_attribute('textContent'))
+ 
+    CZY_WYGRANA = False
+    GODZINA_ROZPOCZECIA = time.time()
+ 
+    while(int(monety.get_attribute('textContent')) > 1):
+ 
+        if(CZY_WYGRANA):
+            wiadomosc.text(   
+                "BYŁO: " + str(WARTOSC_STARTOWA) + 
+                "   \nJEST: " + monety.get_attribute('textContent') + 
+                "   \nZYSK: " + str(int(monety.get_attribute('textContent'))-WARTOSC_STARTOWA) + 
+                "   \nUPŁYNĘŁO (S): " + str(abs(GODZINA_ROZPOCZECIA-time.time()))             
+            )
+            wiadomosc.send()
+ 
+        pole.clear()
+        pole.send_keys(WARTOSC_AKTUALNA)
+ 
+        wait.until(element_rolling_in((By.XPATH, '/html/body/div[22]/div[2]/div[2]/div[1]/div[1]/div/span')))
+        time.sleep(1)
+        bet = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[2]/div[2]/div[1]/div[1]/button')
+        bet.click()
+ 
+        wait2.until(element_rolled((By.XPATH, '/html/body/div[22]/div[2]/div[2]/div[1]/div[1]/div/span')))
+        print("WYLOSOWAŁO: ",int(re.search(r'\d+', rolling.get_attribute('textContent')).group()))
+        if(0 < int(re.search(r'\d+', rolling.get_attribute('textContent')).group()) < 8):
+            WARTOSC_AKTUALNA = WARTOSC_POCZATKOWA
+            CZY_WYGRANA = True
+        else:
+            WARTOSC_AKTUALNA = (WARTOSC_AKTUALNA * 2) + 2
+            CZY_WYGRANA = False
+ 
+ 
+ 
+def LOGOWANIE():
+    driver.get('https://www.csgopolygon.com/')
+ 
+    login = driver.find_element_by_xpath('/html/body/div[8]/div[2]/form/a')
+    login.click()
+    time.sleep(5)
+ 
+    login2 = driver.find_element_by_xpath('/html/body/div[1]/div[7]/div[2]/div/div[2]/div[2]/div/form[1]/input[4]')
+    login2.send_keys(STEAM_LOGIN)
+ 
+    login3 = driver.find_element_by_xpath('/html/body/div[1]/div[7]/div[2]/div/div[2]/div[2]/div/form[1]/input[5]')
+    login3.send_keys(STEAM_PASSWORD)
+ 
+    login4 = driver.find_element_by_xpath('/html/body/div[1]/div[7]/div[2]/div/div[2]/div[2]/div/form[1]/div[4]/input')
+    login4.click()
+    time.sleep(5)
+ 
+    login_guard = driver.find_element_by_xpath('/html/body/div[4]/div[3]/div/div/div/form/div[3]/div[1]/div/input')
+    STEAM_GUARD_CODE = input("Podaj kod Steam Guard: ")
+    login_guard.send_keys(STEAM_GUARD_CODE)
+ 
+    login_guard2 = driver.find_element_by_xpath('/html/body/div[4]/div[3]/div/div/div/form/div[4]/div[1]/div[1]/div[1]')
+    login_guard2.click()
+    time.sleep(2)
+ 
+    login_guard3 = driver.find_element_by_xpath('/html/body/div[4]/div[3]/div/div/div/form/div[4]/div[3]/a')
+    login_guard3.click()
+    time.sleep(5)
+ 
+    RULETKA()
+ 
+LOGOWANIE()
