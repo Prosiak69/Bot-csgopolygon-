@@ -30,9 +30,10 @@ class element_color(object):
 wait = WebDriverWait(driver, 120)
 wait2 = WebDriverWait(driver, 120)
  
-STEAM_LOGIN = "prosiaczek_tygrysek2"
-STEAM_PASSWORD = "Mysiepysie69"
+STEAM_LOGIN = "Kapsiocha"
+STEAM_PASSWORD = "K@psiocha77"
 WARTOSC_POCZATKOWA = 10
+
  
 def RULETKA():
     monety = driver.find_element_by_xpath('/html/body/header/div[2]/div[2]/div[1]/span/i[1]')
@@ -41,10 +42,10 @@ def RULETKA():
     
     slider_poczatkowy = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[1]/span[6]')
     slider_koncowy = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[1]/span[7]')
-    wylosowana = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[2]')
+    
     
     pole = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[1]/input')
-    bet = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/button')
+    bet = driver.find_element_by_id('dice_play')
     
     WARTOSC_AKTUALNA = WARTOSC_POCZATKOWA
     WARTOSC_STARTOWA = int(monety.get_attribute('textContent'))
@@ -60,30 +61,44 @@ def RULETKA():
     move1.click_and_hold(slider_poczatkowy).move_by_offset(-82, 0).release().perform()
     move2.click_and_hold(slider_koncowy).move_by_offset(-87, 0).release().perform()
     
+    Wartosc_przedzial_pocz = driver.find_element_by_class_name("irs-from").text
+    Wartosc_przedzial_konc = driver.find_element_by_class_name("irs-to").text
+
+    #wylosowana = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[2]')
  
     while(int(monety.get_attribute('textContent')) > 1):
  
-        if(CZY_WYGRANA):
-            wiadomosc.text(   
-                "BYŁO: " + str(WARTOSC_STARTOWA) + 
-                "   \nJEST: " + monety.get_attribute('textContent') + 
-                "   \nZYSK: " + str(int(monety.get_attribute('textContent'))-WARTOSC_STARTOWA) + 
-                "   \nUPŁYNĘŁO: " + time.strftime('%H:%M:%S:', time.gmtime(time.time()-GODZINA_ROZPOCZECIA))          
-            )
-            wiadomosc.send()
+
+        
+        #if(CZY_WYGRANA):
+            #wiadomosc.text(   
+                #"BYŁO: " + str(WARTOSC_STARTOWA) + 
+                #"   \nJEST: " + monety.get_attribute('textContent') + 
+                #"   \nZYSK: " + str(int(monety.get_attribute('textContent'))-WARTOSC_STARTOWA) + 
+                #"   \nUPŁYNĘŁO: " + time.strftime('%H:%M:%S:', time.gmtime(time.time()-GODZINA_ROZPOCZECIA))          
+            #)
+            #wiadomosc.send()
  
         pole.clear()
         pole.send_keys(WARTOSC_AKTUALNA)
+                
+        Wartosc_przedzial_pocz = float(Wartosc_przedzial_pocz)
+        Wartosc_przedzial_konc = float(Wartosc_przedzial_konc)
         
-        print(float(slider_poczatkowy.get_attribute("textContent")))
-        print(float(slider_koncowy.get_attribute("textContent")))
-        
-        wait.until(element_color((By.XPATH, '/html/body/div[22]/div[2]/div[2]/div[2]/div[1]/div[1]/button')))
-        time.sleep(1)
+        wylosowana = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[2]')
+        #print(Wartosc_przedzial_pocz)
+        #print(Wartosc_przedzial_konc)
+        #print(wylosowana)     
+        #time.sleep(1)
+
+        wait.until(EC.presence_of_element_located((By.ID, "dice_play")))
+     
         bet.click()
+        time.sleep(1)
+        wylosowana = int(re.search(r'\d+', wylosowana.get_attribute('textContent')).group())
+        time.sleep(1)
         
-        
-        if(float(re.search(r'\d+', slider_poczatkowy.get_attribute('textContent')).group()) <= float(re.search(r'\d+', wylosowana.get_attribute('textContent')).group()) <= float(re.search(r'\d+', slider_koncowy.get_attribute('textContent')).group())):
+        if(Wartosc_przedzial_pocz <= wylosowana <= Wartosc_przedzial_konc):
             WARTOSC_AKTUALNA = WARTOSC_POCZATKOWA
             CZY_WYGRANA = True
         else:
@@ -91,7 +106,6 @@ def RULETKA():
             CZY_WYGRANA = False
  
  
- float(re.search(r'\d+', slider_koncowy.get_attribute('textContent')).group())
  
 def LOGOWANIE():
     driver.get('https://www.csgopolygon.com/')
