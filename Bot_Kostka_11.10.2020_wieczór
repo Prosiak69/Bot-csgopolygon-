@@ -1,0 +1,178 @@
+import time
+import re
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import pymsteams
+from selenium.webdriver.common.action_chains import ActionChains
+ 
+wiadomosc = pymsteams.connectorcard("https://outlook.office.com/webhook/100b4924-888f-48fc-8e0f-a8a2802acd40@cca226a3-a7aa-4b2c-ba03-02f8f26b6728/IncomingWebhook/2ee15cb59f264ed59c6776f7772d9b88/7dcd2613-8d9f-4df4-bf38-ac89d2cb49e3")
+ 
+options = webdriver.ChromeOptions()
+driver = webdriver.Chrome('chromedriver.exe', options=options)
+ 
+ 
+class element_color(object):
+ 
+  def __init__(self, locator):
+    self.locator = locator
+ 
+  def __call__(self, driver):
+    color = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/button').get_attribute("color")    
+    element = driver.find_element(*self.locator)
+    if(str(color)=='#FFFFFF'):
+        return element
+    else:
+        return False
+ 
+wait = WebDriverWait(driver, 120)
+wait2 = WebDriverWait(driver, 120)
+ 
+STEAM_LOGIN = "Kapsiocha"
+STEAM_PASSWORD = "K@psiocha77"
+WARTOSC_POCZATKOWA = 10
+ 
+ 
+ 
+def RULETKA():
+    monety = driver.find_element_by_xpath('/html/body/header/div[2]/div[2]/div[1]/span/i[1]')
+ 
+    kostka_przycisk = driver.find_element_by_xpath('/html/body/div[22]/div[1]/div[2]/ul/li[2]/a')
+ 
+    slider_poczatkowy = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[1]/span[6]')
+    slider_koncowy = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[1]/span[7]')
+ 
+ 
+    pole = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[1]/input')
+    bet = driver.find_element_by_id('dice_play')
+ 
+    WARTOSC_AKTUALNA = WARTOSC_POCZATKOWA
+    WARTOSC_STARTOWA = int(monety.get_attribute('textContent'))
+    seria = 1
+    CZY_WYGRANA = False
+    GODZINA_ROZPOCZECIA = time.time()
+ 
+    kostka_przycisk.click()
+    time.sleep(1)
+    seed = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[1]/div/a')
+    seed.click()
+    time.sleep(1)
+    seedSave = driver.find_element_by_xpath('/html/body/div[16]/div[3]/form/div[2]/span')
+    seedSave.click()
+    time.sleep(1)
+    seedOK = driver.find_element_by_xpath('/html/body/div[24]/div/button[1]')
+    seedOK.click()
+    time.sleep(1)
+    seedOK2 = driver.find_element_by_xpath('/html/body/div[24]/div/button')
+    seedOK2.click()
+    time.sleep(1)
+    seedExit = driver.find_element_by_xpath('/html/body/div[16]/div[1]')
+    seedExit.click()
+    time.sleep(0.5)
+    move1 = ActionChains(driver)
+    move2 = ActionChains(driver)
+    move1.click_and_hold(slider_poczatkowy).move_by_offset(-23, 0).release().perform()
+    time.sleep(0.5)
+    move2.click_and_hold(slider_koncowy).move_by_offset(-25, 0).release().perform()
+ 
+    slider_jest_na_prawo = True
+ 
+    Wartosc_przedzial_pocz = driver.find_element_by_class_name("irs-from").text
+    Wartosc_przedzial_konc = driver.find_element_by_class_name("irs-to").text
+ 
+    #wylosowana = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[2]')
+ 
+    while(int(monety.get_attribute('textContent')) > 1):
+ 
+        if(seria >= 3):
+            seed = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[1]/div/a')
+            seed.click()
+            time.sleep(1)
+            seedSave = driver.find_element_by_xpath('/html/body/div[16]/div[3]/form/div[2]/span')
+            seedSave.click()
+            time.sleep(1)
+            seedOK = driver.find_element_by_xpath('/html/body/div[24]/div/button[1]')
+            seedOK.click()
+            time.sleep(1)
+            seedOK2 = driver.find_element_by_xpath('/html/body/div[24]/div/button')
+            seedOK2.click()
+            time.sleep(1)
+            seedExit = driver.find_element_by_xpath('/html/body/div[16]/div[1]')
+            seedExit.click()
+ 
+        pole.clear()
+        time.sleep(1)
+        pole.send_keys(WARTOSC_AKTUALNA)
+ 
+        Wartosc_przedzial_pocz = float(Wartosc_przedzial_pocz)
+        Wartosc_przedzial_konc = float(Wartosc_przedzial_konc)
+ 
+        wylosowana = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[2]')
+        time.sleep(2)
+        wait.until(EC.element_to_be_clickable((By.ID, "dice_play")))       
+        bet.click()
+        time.sleep(1)
+        wylosowana = float(re.search(r'\d+', wylosowana.get_attribute('textContent')).group())
+        time.sleep(1)
+ 
+        if(Wartosc_przedzial_pocz <= wylosowana <= Wartosc_przedzial_konc):
+            WARTOSC_AKTUALNA = WARTOSC_POCZATKOWA
+            CZY_WYGRANA = True
+ 
+            wiadomosc.text(   
+                "BYŁO: " + str(WARTOSC_STARTOWA) + 
+                "   \nJEST: " + monety.get_attribute('textContent') + 
+                "   \nZYSK: " + str(int(monety.get_attribute('textContent'))-WARTOSC_STARTOWA) + 
+                "   \nUPŁYNĘŁO: " + time.strftime('%H:%M:%S:', time.gmtime(time.time()-GODZINA_ROZPOCZECIA)) +
+                "   \nWYLOSOWANO: " + str(wylosowana) +
+                "   \nSeria: " + str(seria)                
+            )
+            wiadomosc.send()
+            seria = 1
+ 
+        else:
+            WARTOSC_AKTUALNA = (WARTOSC_AKTUALNA * 2) + 2 
+            CZY_WYGRANA = False
+ 
+            wiadomosc.text(
+                "   \nWYLOSOWANO: " + str(wylosowana) +
+                "   \nSeria: " + str(seria)
+            )
+            wiadomosc.send()
+            seria = seria + 1
+ 
+ 
+def LOGOWANIE():
+    driver.get('https://www.csgopolygon.com/')
+ 
+    login = driver.find_element_by_xpath('/html/body/div[8]/div[2]/form/a')
+    login.click()
+    time.sleep(5)
+ 
+    login2 = driver.find_element_by_xpath('/html/body/div[1]/div[7]/div[2]/div/div[2]/div[2]/div/form[1]/input[4]')
+    login2.send_keys(STEAM_LOGIN)
+ 
+    login3 = driver.find_element_by_xpath('/html/body/div[1]/div[7]/div[2]/div/div[2]/div[2]/div/form[1]/input[5]')
+    login3.send_keys(STEAM_PASSWORD)
+ 
+    login4 = driver.find_element_by_xpath('/html/body/div[1]/div[7]/div[2]/div/div[2]/div[2]/div/form[1]/div[4]/input')
+    login4.click()
+    time.sleep(5)
+ 
+    login_guard = driver.find_element_by_xpath('/html/body/div[4]/div[3]/div/div/div/form/div[3]/div[1]/div/input')
+    STEAM_GUARD_CODE = input("Podaj kod Steam Guard: ")
+    login_guard.send_keys(STEAM_GUARD_CODE)
+ 
+    login_guard2 = driver.find_element_by_xpath('/html/body/div[4]/div[3]/div/div/div/form/div[4]/div[1]/div[1]/div[1]')
+    login_guard2.click()
+    time.sleep(2)
+ 
+    login_guard3 = driver.find_element_by_xpath('/html/body/div[4]/div[3]/div/div/div/form/div[4]/div[3]/a')
+    login_guard3.click()
+    time.sleep(5)
+ 
+    RULETKA()
+ 
+LOGOWANIE()
