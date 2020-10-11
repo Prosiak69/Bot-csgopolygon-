@@ -50,7 +50,7 @@ def RULETKA():
     
     WARTOSC_AKTUALNA = WARTOSC_POCZATKOWA
     WARTOSC_STARTOWA = int(monety.get_attribute('textContent'))
- 
+    seria = 1
     CZY_WYGRANA = False
     GODZINA_ROZPOCZECIA = time.time()
     
@@ -59,8 +59,10 @@ def RULETKA():
     
     move1 = ActionChains(driver)
     move2 = ActionChains(driver)
-       
-    #move1.click_and_hold(slider_poczatkowy).move_by_offset(2, 0).release().perform()
+           
+    move1.click_and_hold(slider_poczatkowy).move_by_offset(-23, 0).release().perform()
+    time.sleep(0.5)
+    move2.click_and_hold(slider_koncowy).move_by_offset(-25, 0).release().perform()
     
     slider_jest_na_prawo = True
     
@@ -72,15 +74,15 @@ def RULETKA():
     while(int(monety.get_attribute('textContent')) > 1):
   
         pole.clear()
+        time.sleep(1)
         pole.send_keys(WARTOSC_AKTUALNA)
                 
         Wartosc_przedzial_pocz = float(Wartosc_przedzial_pocz)
         Wartosc_przedzial_konc = float(Wartosc_przedzial_konc)
         
         wylosowana = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[2]')
-
+        time.sleep(2)
         wait.until(EC.element_to_be_clickable((By.ID, "dice_play")))       
-        time.sleep(1)
         bet.click()
         time.sleep(1)
         wylosowana = int(re.search(r'\d+', wylosowana.get_attribute('textContent')).group())
@@ -96,34 +98,37 @@ def RULETKA():
                 "   \nZYSK: " + str(int(monety.get_attribute('textContent'))-WARTOSC_STARTOWA) + 
                 "   \nUPŁYNĘŁO: " + time.strftime('%H:%M:%S:', time.gmtime(time.time()-GODZINA_ROZPOCZECIA)) +
                 "   \nWYLOSOWANO: " + str(wylosowana) +
-                "   \PRZEDZIAŁ PRAWY: " + slider_jest_na_prawo                
+                "   \nSeria: " + str(seria)                
             )
             wiadomosc.send()
+            seria = 1
             
         else:
             WARTOSC_AKTUALNA = (WARTOSC_AKTUALNA * 2) + 2
             CZY_WYGRANA = False
-            
-            wiadomosc.text(   
-                "Wylosowana: " + str(wylosowana) +
-                "   \PRZEDZIAŁ PRAWY: " + slider_jest_na_prawo                
+
+            wiadomosc.text(
+                "   \nWYLOSOWANO: " + str(wylosowana) +
+                "   \nSeria: " + str(seria)
             )
             wiadomosc.send()
+            seria = seria + 1
+
             
-            move1 = ActionChains(driver)
-            move2 = ActionChains(driver)
-            
-            if(slider_jest_na_prawo):
-                move1.click_and_hold(slider_poczatkowy).move_by_offset(-135, 0).release().perform()
-                time.sleep(0.2)
-                move2.click_and_hold(slider_koncowy).move_by_offset(-136, 0).release().perform()
-                slider_jest_na_prawo = False
+            #if(slider_jest_na_prawo):
+
+                #slider_jest_na_prawo = False
+                #time.sleep(1)
                 
-            else:
-                move2.click_and_hold(slider_koncowy).move_by_offset(136, 0).release().perform()
-                time.sleep(0.2)
-                move1.click_and_hold(slider_poczatkowy).move_by_offset(135, 0).release().perform()
-                slider_jest_na_prawo = True
+            #else:
+                #move1 = ActionChains(driver)
+                #move2 = ActionChains(driver)
+                
+                #move2.click_and_hold(slider_koncowy).move_by_offset(136, 0).release().perform()
+                #time.sleep(0.5)
+                #move1.click_and_hold(slider_poczatkowy).move_by_offset(135, 0).release().perform()
+                #slider_jest_na_prawo = True
+                #time.sleep(1)
  
  
 def LOGOWANIE():
