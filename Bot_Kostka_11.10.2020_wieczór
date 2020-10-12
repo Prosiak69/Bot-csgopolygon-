@@ -32,7 +32,7 @@ wait2 = WebDriverWait(driver, 120)
  
 STEAM_LOGIN = "Kapsiocha"
 STEAM_PASSWORD = "K@psiocha77"
-WARTOSC_POCZATKOWA = 10
+WARTOSC_POCZATKOWA = 50
  
  
  
@@ -70,12 +70,12 @@ def RULETKA():
     time.sleep(1)
     seedExit = driver.find_element_by_xpath('/html/body/div[16]/div[1]')
     seedExit.click()
-    time.sleep(0.5)
+    time.sleep(1)
     move1 = ActionChains(driver)
     move2 = ActionChains(driver)
-    move1.click_and_hold(slider_poczatkowy).move_by_offset(-23, 0).release().perform()
-    time.sleep(0.5)
-    move2.click_and_hold(slider_koncowy).move_by_offset(-25, 0).release().perform()
+    move1.click_and_hold(slider_poczatkowy).move_by_offset(-136, 0).release().perform()
+    time.sleep(1)
+    move2.click_and_hold(slider_koncowy).move_by_offset(-135, 0).release().perform()
  
     slider_jest_na_prawo = True
  
@@ -87,19 +87,33 @@ def RULETKA():
     while(int(monety.get_attribute('textContent')) > 1):
  
         if(seria >= 3):
+            
+            wait.until(EC.element_to_be_clickable((By.ID, "dice_change_seed")))
             seed = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[1]/div/a')
+            time.sleep(1)
             seed.click()
+
             time.sleep(1)
-            seedSave = driver.find_element_by_xpath('/html/body/div[16]/div[3]/form/div[2]/span')
+            seedSave = driver.find_element_by_xpath('/html/body/div[16]/div[3]/form/div[2]/span')            
+            time.sleep(1)            
             seedSave.click()
+            
+            time.sleep(1)           
+            #wait.until(EC.element_to_be_clickable((By.ID, "dice_change_seed")))
+            seedOK = driver.find_element_by_xpath('/html/body/div[24]/div/button[1]')            
             time.sleep(1)
-            seedOK = driver.find_element_by_xpath('/html/body/div[24]/div/button[1]')
             seedOK.click()
-            time.sleep(1)
+            
+            time.sleep(2)            
+            #wait.until(EC.element_to_be_clickable((By.ID, "dice_change_seed")))
             seedOK2 = driver.find_element_by_xpath('/html/body/div[24]/div/button')
+            time.sleep(1)            
             seedOK2.click()
+            
             time.sleep(1)
+            #wait.until(EC.element_to_be_clickable((By.ID, "dice_change_seed")))
             seedExit = driver.find_element_by_xpath('/html/body/div[16]/div[1]')
+            time.sleep(1)
             seedExit.click()
  
         pole.clear()
@@ -110,8 +124,9 @@ def RULETKA():
         Wartosc_przedzial_konc = float(Wartosc_przedzial_konc)
  
         wylosowana = driver.find_element_by_xpath('/html/body/div[22]/div[2]/div[3]/div[1]/div/div/div[2]/div[2]/div/span[2]')
-        time.sleep(2)
-        wait.until(EC.element_to_be_clickable((By.ID, "dice_play")))       
+        time.sleep(1)
+        wait.until(EC.element_to_be_clickable((By.ID, "dice_play")))
+        time.sleep(1)        
         bet.click()
         time.sleep(1)
         wylosowana = float(re.search(r'\d+', wylosowana.get_attribute('textContent')).group())
